@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  description: MyString
+  techstack: MyString
+  projecturl: MyString
+  min_price_point: MyString
+  user: one
+
+two:
+  title: MyString
+  description: MyString
+  techstack: MyString
+  projecturl: MyString
+  min_price_point: MyString
+  user: two
