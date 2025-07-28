@@ -23,4 +23,9 @@ RSpec.describe EmployerProfile, type: :model do
       expect(employer_profile.errors[:industry]).to include("can't be blank")
     end
   end
+  context "associations" do
+    it{ should belong_to(:user) }
+    it { should have_many(:job_posts) }
+    it { should have_many(:offers) }
+  end
 end

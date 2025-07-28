@@ -38,4 +38,9 @@ RSpec.describe JobSeekerProfile, type: :model do
       expect(job_seeker_profile.errors[:portfolio_url]).to include("can't be blank")
     end
   end
+  context "associations" do
+    it{ should belong_to(:user) }
+    it { should have_many(:offers) }
+    it { should have_many(:applications) }
+  end
 end

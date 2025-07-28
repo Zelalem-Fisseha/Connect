@@ -1,4 +1,6 @@
 class JobSeekerProfile < ApplicationRecord
+  has_many :offers
+  has_many :applications
   belongs_to :user
   validates :title, presence: true
   validates :bio, presence: true

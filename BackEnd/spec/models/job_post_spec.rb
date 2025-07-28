@@ -43,4 +43,10 @@ RSpec.describe JobPost, type: :model do
       expect(job_postone.errors[:is_active]).to include("can't be blank")
     end
   end
+  context "associations" do
+    it{ should belong_to(:employer_profile) }
+    it { should have_many(:offers) }
+    it { should have_many(:applications) }
+  end
+  
 end
