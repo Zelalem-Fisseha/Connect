@@ -10,19 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_26_212408) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_28_174324) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "applications", force: :cascade do |t|
     t.bigint "job_post_id", null: false
-    t.bigint "job_seeker_profiles_id", null: false
+    t.bigint "job_seeker_profile_id", null: false
     t.string "cover_letter"
     t.integer "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["job_post_id"], name: "index_applications_on_job_post_id"
-    t.index ["job_seeker_profiles_id"], name: "index_applications_on_job_seeker_profiles_id"
+    t.index ["job_seeker_profile_id"], name: "index_applications_on_job_seeker_profile_id"
   end
 
   create_table "employer_profiles", force: :cascade do |t|
@@ -83,14 +83,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_212408) do
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
-    t.integer "role"
+    t.integer "role", default: 0, null: false
     t.string "password_digest"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   add_foreign_key "applications", "job_posts"
-  add_foreign_key "applications", "job_seeker_profiles", column: "job_seeker_profiles_id"
+  add_foreign_key "applications", "job_seeker_profiles"
   add_foreign_key "employer_profiles", "users"
   add_foreign_key "job_posts", "employer_profiles"
   add_foreign_key "job_seeker_profiles", "users"
