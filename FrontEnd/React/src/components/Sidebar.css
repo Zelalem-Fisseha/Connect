@@ -1,0 +1,103 @@
+/* src/components/Sidebar.css */
+
+/* Base styles for the entire sidebar navigation container */
+.sidebar {
+    width: 250px; /* Fixed width of the sidebar */
+    background-color: #1a2233; /* Dark background color (matches your design) */
+    color: #e0e0e0; /* Light text color for contrast */
+    height: 100vh; /* Takes up the full viewport height */
+    padding: 20px 0; /* Vertical padding, no horizontal padding here as it's for content inside */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+
+    /* Flexbox properties to arrange content vertically */
+    display: flex;
+    flex-direction: column; /* Stacks children (header, menu, footer) vertically */
+
+    /* Positioning to keep the sidebar fixed on the left side of the screen */
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    overflow-y: auto; /* Adds scrollbar if content exceeds sidebar height */
+    z-index: 1000; /* Ensures sidebar appears above other content if necessary */
+}
+
+/* Styles for the header section (logo and brand name) */
+.sidebar-header {
+    text-align: center; /* Centers the content horizontally */
+    margin-bottom: 40px; /* Space below the header */
+    padding: 0 15px; /* Horizontal padding for brand text */
+}
+
+/* Styles for the logo icon within the header */
+.sidebar-logo-icon {
+    color: #00bcd4; /* A vibrant light blue/cyan color for the icon */
+    margin-bottom: 10px; /* Space below the icon */
+    display: flex; /* Using flexbox to ensure the icon is centered */
+    justify-content: center; /* Horizontally centers the icon */
+}
+
+/* Styles for the brand name text (e.g., "DevConnect") */
+.sidebar-brand {
+    font-size: 24px; /* Larger font size for prominence */
+    font-weight: 600; /* Bolder text */
+    color: #fff; /* Pure white color for strong contrast */
+}
+
+/* Styles for the main navigation menu list */
+.sidebar-menu {
+    list-style: none; /* Removes default bullet points from list items */
+    padding: 0; /* Removes default padding from the list */
+    margin: 0; /* Removes default margin from the list */
+    flex-grow: 1; /* Allows this section to expand and push the footer to the bottom */
+}
+
+/* Styles for individual menu list items */
+.sidebar-menu-item {
+    margin-bottom: 5px; /* Adds vertical space between menu items */
+}
+
+/* Styles for the links inside each menu item */
+.sidebar-menu-item a {
+    display: flex; /* Uses flexbox to align icon and text horizontally */
+    align-items: center; /* Vertically aligns icon and text in the middle */
+    padding: 12px 20px; /* Padding inside the clickable area of each link */
+    color: #e0e0e0; /* Default text color for links */
+    text-decoration: none; /* Removes default underline from links */
+    font-size: 16px; /* Font size for the link text */
+    /* Smooth transition for hover and active effects */
+    transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+    border-left: 5px solid transparent; /* Creates space for the active indicator border */
+}
+
+/* Styles for the icons within the links */
+.sidebar-icon {
+    margin-right: 15px; /* Space between the icon and the text */
+    font-size: 20px; /* Size of the icon */
+}
+
+/* Styling for the currently active/selected menu item */
+.sidebar-menu-item.active a {
+    background-color: #2b3a4a; /* Slightly lighter background to indicate active state */
+    color: #fff; /* White text for the active item */
+    border-left-color: #00bcd4; /* The highlight color for the active indicator */
+}
+
+/* Styling for when the mouse hovers over a menu item */
+.sidebar-menu-item a:hover {
+    background-color: #2b3a4a; /* Changes background on hover */
+    color: #fff; /* Changes text color on hover */
+    border-left-color: #00bcd4; /* Shows the highlight on hover */
+}
+
+/* Styles for the footer section (e.g., Settings link) */
+.sidebar-footer {
+    margin-top: auto; /* Pushes this section to the bottom of the flex container */
+    padding-top: 20px; /* Space above the footer content */
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* A subtle separator line */
+}
+
+/* Global rule to remove default link underlines (good for navigation) */
+a {
+    text-decoration: none;
+}

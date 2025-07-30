@@ -1,0 +1,165 @@
+/* src/components/DeveloperCard.css */
+
+.profile-card{
+    background-color: #d4edda; /* Light green/mint background from image */
+
+    border-radius: 30px; /* Rounded corners */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Soft shadow */
+    width: 300px; /* Fixed width for the card, adjust as needed */
+    padding: 20px;
+    text-align: center; /* Center content horizontally */
+    margin: 20px auto; /* Center the card on the page and add some margin */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items vertically within the card */
+    font-family: 'Inter', sans-serif; /* Using Inter font as per instructions */
+}
+
+.card-header {
+    margin-bottom: 20px;
+}
+.profileImage{
+width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.card-body {
+    margin-bottom: 25px;
+    width: 100%; /* Take full width of card for text alignment */
+}
+
+.name {
+    font-size: 24px;
+    font-weight: 700; /* Bolder name */
+    color: #2c3e50; /* Darker text for name */
+    margin-bottom: 5px;
+}
+
+.title {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.skills {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-around; /* Distributes space between info boxes */
+    width: 100%;
+    margin-top: 15px;
+}
+
+.info-box {
+    background-color: #e2f0e6; /* Slightly lighter green for info boxes */
+    border-radius: 8px;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1; /* Allows boxes to grow and shrink */
+    margin: 0 5px; /* Space between boxes */
+}
+
+.info-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between; /* Space out the buttons */
+    width: 100%;
+    margin-top: 20px;
+}
+
+.action-button {
+    padding: 12px 15px;
+    border: none;
+    border-radius: 25px; /* More rounded buttons */
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1; /* Buttons take equal space */
+    margin: 0 5px; /* Space between buttons */
+}
+
+.skip-button {
+    background-color: #f0f0f0; /* Light grey for skip */
+    color: #555;
+}
+
+.skip-button:hover {
+    background-color: #e0e0e0;
+}
+
+.send-request-button {
+    background-color: #00bcd4; /* Light blue/cyan for send request */
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 188, 212, 0.3); /* Subtle shadow for primary button */
+}
+
+.send-request-button:hover {
+    background-color: #00a8bd; /* Slightly darker blue on hover */
+    box-shadow: 0 4px 10px rgba(0, 188, 212, 0.4);
+}
+/* src/components/Profile.css */
+
+
+/* ... (other existing styles) ... */
+
+.profile-link {
+  display: block; /* Make it a block element to give it its own line */
+  margin-top: 15px; /* Space above the link */
+  font-size: 14px;
+  color: #007bff; /* A standard blue for links */
+  text-decoration: none; /* No underline by default */
+  transition: color 0.2s ease;
+}
+
+.profile-link:hover {
+  color: #0056b3; /* Darker blue on hover */
+  text-decoration: underline; /* Underline on hover */
+}
+
+.info-row {
+  display: flex;
+  /* Consider using 'gap' instead of margins on info-box if you target newer browsers.
+     For now, space-around combined with flex: 1 should work for 3 items. */
+  justify-content: space-around;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.info-box {
+  background-color: #e2f0e6;
+  border-radius: 8px;
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1; /* Allows boxes to grow and shrink to share space equally */
+  margin: 0 5px; /* Space between boxes */
+}
+
+/* ... (rest of your existing styles) ... */

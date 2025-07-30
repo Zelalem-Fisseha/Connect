@@ -1,0 +1,81 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice Johnson",
+      "email": "alice@example.com",
+      "role": 0,
+      "password_digest": "hashedpassword",
+      "created_at": "2025-07-29T08:00:00Z",
+      "updated_at": "2025-07-29T08:00:00Z"
+    }
+  ],
+  "employer_profiles": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "company_name": "Tech Corp",
+      "company_description": "A leading software company",
+      "location": "New York",
+      "industry": "Software",
+      "created_at": "2025-07-29T08:00:00Z",
+      "updated_at": "2025-07-29T08:00:00Z"
+    }
+  ],
+  "job_seeker_profiles": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "title": "Frontend Developer",
+      "bio": "Passionate about UI/UX and modern JavaScript frameworks.",
+      "years_of_experience": 3,
+      "skills": "React, Vue, HTML, CSS",
+      "location": "Remote",
+      "availability_status": "Available",
+      "resume_url": "https://example.com/resume.pdf",
+      "portfolio_url": "https://portfolio.example.com",
+      "created_at": "2025-07-29T08:00:00Z",
+      "updated_at": "2025-07-29T08:00:00Z"
+    }
+  ],
+  "job_posts": [
+    {
+      "id": 1,
+      "employer_profile_id": 1,
+      "description": "Looking for a full-stack developer",
+      "required_skills": "Rails, React, PostgreSQL",
+      "salary_min": 50000,
+      "salary_max": 80000,
+      "job_type": 1,
+      "location": "San Francisco",
+      "application_deadline": "2025-08-31",
+      "is_active": true,
+      "created_at": "2025-07-29T08:00:00Z",
+      "updated_at": "2025-07-29T08:00:00Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": 1,
+      "job_post_id": 1,
+      "job_seeker_profile_id": 1,
+      "cover_letter": "I'm excited to apply for this position.",
+      "status": 0,
+      "created_at": "2025-07-29T08:00:00Z",
+      "updated_at": "2025-07-29T08:00:00Z"
+    }
+  ],
+  "offers": [
+    {
+      "id": 1,
+      "job_post_id": 1,
+      "job_seeker_profile_id": 1,
+      "employer_profile_id": 1,
+      "base_salary": 70000,
+      "benefits_description": "Health, Dental, Remote Work",
+      "status": 0,
+      "created_at": "2025-07-29T08:00:00Z",
+      "updated_at": "2025-07-29T08:00:00Z"
+    }
+  ]
+}

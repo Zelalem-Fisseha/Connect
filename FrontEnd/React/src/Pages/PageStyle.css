@@ -1,0 +1,124 @@
+/*!* src/pages/PageStyles.css *!*/
+/*.page-content {*/
+/*    padding: 20px;*/
+/*    background-color: #ffffff; !* White background for page content *!*/
+/*    border-radius: 8px; !* Slightly rounded corners *!*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); !* Subtle shadow *!*/
+/*    margin-bottom: 20px; !* Space between content blocks if you add more *!*/
+/*}*/
+
+/*.page-content h1 {*/
+/*    color: #333;*/
+/*    margin-bottom: 15px;*/
+/*    font-size: 28px;*/
+/*}*/
+
+/*.page-content p {*/
+/*    color: #555;*/
+/*    line-height: 1.6;*/
+/*}*/
+/*!* src/pages/PageStyles.css *!*/
+
+/*!* ... (existing styles) ... *!*/
+
+/*!* Style for individual Profile instances within the wrapper *!*/
+/*!* <--- UPDATED: Class name changed from .developer-card to .profile-card *!*/
+/*.dev-cards-wrapper > .profile-card {*/
+/*    flex-shrink: 0;*/
+/*    scroll-snap-align: start;*/
+/*    margin-right: 20px;*/
+/*    margin-left: 0 !important;*/
+/*    margin-right: 20px !important;*/
+/*    margin-top: 0 !important;*/
+/*    margin-bottom: 0 !important;*/
+/*}*/
+
+/*.dev-cards-wrapper > .profile-card:last-child {*/
+/*    margin-right: 0;*/
+/*}*/
+
+/*!* ... (rest of the styles) ... *!*/
+/* src/pages/PageStyles.css */
+
+.page-content {
+ padding: 20px; /* Adjust as above */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.page-content h1 {
+  /*color: #333;*/
+  margin-bottom: 15px;
+  font-size: 28px;
+}
+
+.page-content p {
+  color: #555;
+  line-height: 1.6;
+}
+
+/* --- NEW/UPDATED Styles for Grid Layout --- */
+
+.profile-cards-grid-wrapper {
+  display: grid; /* <--- KEY: Enables CSS Grid layout */
+  /* This creates responsive columns:
+       - `repeat(auto-fill, ...)`: Creates as many columns as can fit.
+       - `minmax(300px, 1fr)`: Each column will be at least 300px wide, but will grow
+         (1 fraction unit) to fill available space if there's room. */
+  /*display: flex;*/
+  /*flex-direction: row;*/
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px; /* <--- Spacing between grid items (cards) both horizontally and vertically */
+  justify-items: center; /* Centers items horizontally within their grid cells */
+  margin: 30px 0; /* Space above/below the grid container */
+  width: 100%; /* Ensure the grid container takes up the full width of its parent */
+}
+
+.profile-cards-grid-wrapper > .profile-card {
+  margin: 0;
+}
+
+.job-posts-grid-wrapper {
+ display: grid; /* <--- KEY: Enables CSS Grid layout */
+  /* This creates responsive columns:
+       - `repeat(auto-fill, ...)`: Creates as many columns as can fit.
+       - `minmax(300px, 1fr)`: Each column will be at least 300px wide, but will grow
+         (1 fraction unit) to fill available space if there's room. */
+  /*display: flex;*/
+  /*flex-direction: row;*/
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px; /* <--- Spacing between grid items (cards) both horizontally and vertically */
+  justify-items: center; /* Centers items horizontally within their grid cells */
+   /* Space above/below the grid container */
+  width: 100%; /* Ensure the grid container takes up the full width of its parent */
+}
+
+.job-posts-grid-wrapper > .job-post-card {
+  margin: 0;
+}
+.dash-page-content{
+  padding: 20px; /* <--- Adjust this value. If it's too high, it reduces inner space. */
+                /* Try reducing it to 15px or 10px on all sides, or setting specific sides. */
+  background-color: #ffffff; /* Or whatever background color you want for the page itself */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box; /* This is essential for padding to be included in the width */
+  /* Consider adding: */
+  min-width: 0; /* Ensures it doesn't prevent shrinking when needed */
+  overflow-x: hidden; /* Prevents horizontal scrollbar if elements inside try to overflow */
+}
+
+/* If you still use .page-content in Dashboard.jsx, apply changes here */
+
+/* Ensure your grid wrapper also has box-sizing */
+
+
+
