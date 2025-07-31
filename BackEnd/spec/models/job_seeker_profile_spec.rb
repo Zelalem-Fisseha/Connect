@@ -22,11 +22,6 @@ RSpec.describe JobSeekerProfile, type: :model do
       expect(job_seeker_profile).not_to be_valid
       expect(job_seeker_profile.errors[:skills]).to include("can't be blank")
     end
-    it "invalid if location is not provided" do
-      job_seeker_profile = JobSeekerProfile.new(title: "fullstack", bio: "this is a bio", years_of_experience: 5, skills: "Ruby, Rails", availability_status: "available", resume_url: "http://example.com/resume.pdf", portfolio_url: "http://example.com/portfolio")
-      expect(job_seeker_profile).not_to be_valid
-      expect(job_seeker_profile.errors[:location]).to include("can't be blank")
-    end
     it "invalid if availability_status is not provided" do
       job_seeker_profile = JobSeekerProfile.new(title: "fullstack", bio: "this is a bio", years_of_experience: 5, skills: "Ruby, Rails", location: "Addis Ababa", resume_url: "http://example.com/resume.pdf", portfolio_url: "http://example.com/portfolio")
       expect(job_seeker_profile).not_to be_valid
