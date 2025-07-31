@@ -1,6 +1,6 @@
 class User < ApplicationRecord
-  has_many :job_seeker_profiles, dependent: :destroy
-  has_many :employer_profiles, dependent: :destroy
+  has_one :job_seeker_profiles, dependent: :destroy
+  has_one :employer_profiles, dependent: :destroy
   has_secure_password
   ROLES = { job_seeker: 0, employer: 1 }
   validates :name, presence: true

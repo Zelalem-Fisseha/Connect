@@ -40,7 +40,7 @@ RSpec.describe User, type: :model do
     end
   end
   context "associations" do
-    it { should have_many(:job_seeker_profiles).dependent(:destroy) }
-    it { should have_many(:employer_profiles).dependent(:destroy) }
+    it { should have_one(:job_seeker_profiles).dependent(:destroy) }
+    it { should have_one(:employer_profiles).dependent(:destroy) }
   end
 end
