@@ -6,13 +6,14 @@ RSpec.describe "JobPosts", type: :request do
     it "returns a list of job posts" do
       get job_posts_path
       expect(response).to have_http_status(:success)
-      expect(response.body).to include("Job Post List")
+      expect(response.body).to include(Array.wrap(job_post.description).first)
     end
   end
   describe "POST/job_posts" do
     it "creates a new job post" do
       post job_posts_path, params: {
         job_post: {
+          employer_profile_id: job_post.employer_profile_id,
           description: "Software Engineer",
           required_skills: "Ruby, Rails, JavaScript",
           salary_min: 5000,
