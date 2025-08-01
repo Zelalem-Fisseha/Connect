@@ -8,10 +8,11 @@ class User < ApplicationRecord
   validates :role, presence: true
   validates :password, presence: true, length: { minimum: 6 }
 
-  def job_seeker
-    role == ROLES[:job_seeker]
+  def job_seeker?
+    role == ROLES[:job_seeker].to_s
   end
-  def employer
-    role == ROLES[:employer]
+  
+  def employer?
+    role == ROLES[:employer].to_s
   end
 end

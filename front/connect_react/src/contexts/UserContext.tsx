@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
+import { User as AuthUser } from '@/types/auth';
 
 export type UserType = 'jobseeker' | 'employer';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  type: UserType;
-  avatar?: string;
+// Extend the User type from auth with frontend specific fields
+interface User extends Omit<AuthUser, 'id' | 'role'> {
+  id: string; // Override to ensure string type for frontend
+  name: string; // Combined first_name and last_name or company_name
+  type: UserType; // Frontend specific type (jobseeker/employer)
+  avatar?: string; // Frontend specific field
 }
 
 interface UserContextType {

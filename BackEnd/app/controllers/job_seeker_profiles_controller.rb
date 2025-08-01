@@ -41,6 +41,18 @@ class JobSeekerProfilesController < ApplicationController
       render json: { error: 'Job seeker profile not found' }, status: :not_found
     end
   end
+
+  # GET /job_seeker_profiles/by_user/:user_id
+  def by_user
+    user = User.find(params[:user_id])
+    @job_seeker_profile = user.job_seeker_profile
+
+    if @job_seeker_profile
+      render json: @job_seeker_profile
+    else
+      render json: { error: 'Job seeker profile not found for this user' }, status: :not_found
+    end
+  end
   private
   def set_user
     @user = User.find(params[:user_id])

@@ -1,25 +1,83 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, MapPin, Calendar, DollarSign, Briefcase } from 'lucide-react';
-import { jobs, getJobTypeLabel, formatSalaryRange, getSkillsArray } from '@/data/jobs';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Briefcase, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { jobPostsApi, type JobPost } from '@/services/jobPostsApi';
+import { applicationsApi, type CreateApplicationData } from '@/services/applicationsApi';
+import { useUser } from '@/contexts/UserContext';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { formatDistanceToNow } from 'date-fns';
 
 const JobDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const job = jobs.find(j => j.id === parseInt(id || '0'));
+  const [job, setJob] = useState<JobPost | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [showApplyDialog, setShowApplyDialog] = useState(false);
+  const [coverLetter, setCoverLetter] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [hasApplied, setHasApplied] = useState(false);
+  const { user, isAuthenticated } = useUser();
 
-  if (!job) {
+  useEffect(() => {
+    const fetchJobAndApplications = async () => {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        const jobData = await jobPostsApi.getJobPost(parseInt(id));
+        setJob(jobData);
+        
+        // Check if user has already applied
+        if (user?.id) {
+          const applications = await applicationsApi.getMyApplications(parseInt(user.id));
+          const hasAppliedToJob = applications.some(app => app.job_post_id === parseInt(id));
+          setHasApplied(hasAppliedToJob);
+        }
+      } catch (err) {
+        console.error('Error fetching job or applications:', err);
+        setError('Failed to load job details. Please try again later.');
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load job details.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobAndApplications();
+  }, [id, toast, user?.id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+          <p>Loading job details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !job) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Job Not Found</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            {error || 'Job Not Found'}
+          </h1>
           <Button onClick={() => navigate('/jobseeker/dashboard')}>
             Back to Jobs
           </Button>
@@ -28,17 +86,69 @@ const JobDetails = () => {
     );
   }
 
-  const handleApply = () => {
-    console.log('Applying to job:', job.id);
+  const handleApplyClick = () => {
+    if (!isAuthenticated) {
+      navigate('/signin');
+      return;
+    }
+    setShowApplyDialog(true);
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!job) {
+      console.error('No job data');
+      return;
+    }
+    if (!user?.id) {
+      console.error('User not authenticated');
+      setApplyError('Please sign in to apply for this job.');
+      return;
+    }
+    
+    try {
+      console.log('Starting application submission');
+      setIsSubmitting(true);
+      setApplyError(null);
+      
+      const applicationData = {
+        cover_letter: coverLetter,
+        status: 0 // Pending
+      };
+      
+      console.log('Sending application data:', { jobId: job.id, userId: user.id, applicationData });
+      const response = await applicationsApi.createApplication(
+        parseInt(user.id),
+        job.id,
+        applicationData
+      );
+      console.log('Application submitted successfully:', response);
+      
+      toast({
+        title: 'Application submitted!',
+        description: 'Your application has been sent to the employer.',
+      });
+      
+      setShowApplyDialog(false);
+      setCoverLetter('');
+    } catch (err) {
+      console.error('Error applying to job:', err);
+      setApplyError('Failed to submit application. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleSaveJob = () => {
+    // TODO: Implement save job functionality
     toast({
-      title: "Application submitted!",
-      description: "Your application has been sent to the employer.",
+      title: 'Job saved!',
+      description: 'This job has been added to your saved jobs.',
     });
   };
 
-  const skillsArray = getSkillsArray(job.required_skills);
-  const jobTypeLabel = getJobTypeLabel(job.job_type);
-  const salaryRange = formatSalaryRange(job.salary_min, job.salary_max);
+  const skillsArray = job.required_skills.split(',').map(skill => skill.trim());
+  const jobTypeLabel = 'Full-time'; // TODO: Map job_type to label if needed
+  const salaryRange = `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,9 +190,9 @@ const JobDetails = () => {
                         <Calendar className="h-4 w-4" />
                         <span>Deadline: {new Date(job.application_deadline).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Briefcase className="h-4 w-4" />
-                        <span>{jobTypeLabel}</span>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Posted {formatDistanceToNow(new Date(job.created_at))} ago
                       </div>
                     </div>
                   </div>
@@ -191,11 +301,20 @@ const JobDetails = () => {
                       </div>
                     </div>
                     
-                    <Button onClick={handleApply} className="w-full" size="lg">
-                      Submit Application
+                    <Button 
+                      onClick={handleApplyClick} 
+                      className="w-full" 
+                      size="lg"
+                      disabled={!isAuthenticated || hasApplied}
+                    >
+                      {hasApplied ? 'Applied' : isAuthenticated ? 'Apply Now' : 'Sign In to Apply'}
                     </Button>
                     
-                    <Button variant="outline" className="w-full">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={handleSaveJob}
+                    >
                       Save Job
                     </Button>
                   </div>
@@ -231,6 +350,58 @@ const JobDetails = () => {
           </div>
         </motion.div>
       </main>
+
+      {/* Apply Dialog */}
+      <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Apply for {job?.description.substring(0, 50)}...</DialogTitle>
+            <DialogDescription>
+              Submit your application for this position
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="coverLetter" className="text-sm font-medium">
+                Cover Letter <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                id="coverLetter"
+                placeholder="Write a cover letter explaining why you're a good fit for this position..."
+                className="min-h-[200px]"
+                value={coverLetter}
+                onChange={(e) => setCoverLetter(e.target.value)}
+                required
+              />
+              {applyError && (
+                <p className="text-sm text-red-500">{applyError}</p>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowApplyDialog(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmitApplication}
+              disabled={isSubmitting || !coverLetter.trim()}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : 'Submit Application'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

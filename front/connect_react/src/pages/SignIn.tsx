@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import authService from '@/services/authService';
+import { User } from '@/types/auth';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -73,33 +75,69 @@ const SignIn = () => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Call the login service
+      await authService.login(formData.email, formData.password);
       
-      // Mock successful login
-      setUserType(activeTab as 'jobseeker' | 'employer');
+      // Get user data after successful login
+      const userData = await authService.getCurrentUser();
+      
+      // Update user context
+      const userRole = activeTab === 'jobseeker' ? 'jobseeker' : 'employer';
+      setUserType(userRole);
       setUser({
-        id: '1',
-        name: activeTab === 'jobseeker' ? 'John Doe' : 'TechStart Inc.',
-        email: formData.email,
-        type: activeTab as 'jobseeker' | 'employer'
+        id: userData.id.toString(),
+        name: userRole === 'jobseeker' 
+          ? `${userData.first_name || ''} ${userData.last_name || ''}`.trim()
+          : userData.company_name || 'Company',
+        email: userData.email,
+        type: userRole
       });
       
       toast({
         title: "Welcome back!",
-        description: `Successfully signed in as ${activeTab === 'jobseeker' ? 'Job Seeker' : 'Employer'}.`,
+        description: `Successfully signed in as ${userRole === 'jobseeker' ? 'Job Seeker' : 'Employer'}.`,
       });
       
-      navigate(activeTab === 'jobseeker' ? '/jobseeker/dashboard' : '/employer/dashboard');
-    }, 1500);
+      // Redirect based on user role
+      const redirectPath = userRole === 'jobseeker' ? '/jobseeker/dashboard' : '/employer/dashboard';
+      navigate(redirectPath);
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      // Handle specific error messages from the API if available
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign in. Please try again.';
+      
+      toast({
+        title: "Sign in failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    toast({
-      title: `${provider} Login`,
-      description: `${provider} login functionality would be implemented here.`,
-    });
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      // For OAuth, you would typically redirect to the provider's auth URL
+      // This is a placeholder for the actual OAuth flow
+      toast({
+        title: `Redirecting to ${provider}...`,
+        description: 'Please complete the authentication process in the new window.',
+      });
+      
+      // Example OAuth flow (implementation depends on your backend)
+      // window.location.href = `/auth/${provider.toLowerCase()}`;
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      toast({
+        title: "Error",
+        description: `Failed to connect with ${provider}. Please try again.`,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDemoLogin = (type: 'jobseeker' | 'employer') => {

@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import authService from '@/services/authService';
+import { User as UserType } from '@/types/auth';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -36,7 +38,8 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     company: '',
     password: '',
@@ -45,7 +48,8 @@ const SignUp = () => {
   });
 
   const [errors, setErrors] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     company: '',
     password: '',
@@ -61,8 +65,12 @@ const SignUp = () => {
       newErrors[key as keyof typeof newErrors] = '';
     });
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+    
+    if (activeTab === 'jobseeker' && !formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
     }
     
     if (!formData.email) {
@@ -106,28 +114,68 @@ const SignUp = () => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Prepare user data based on role
+      const userRole = activeTab === 'jobseeker' ? 'job_seeker' : 'employer';
       
-      // Mock successful registration
-      setUserType(activeTab as 'jobseeker' | 'employer');
-      setUser({
-        id: '1',
-        name: activeTab === 'jobseeker' 
-          ? formData.name
-          : formData.company,
+      const userData = {
         email: formData.email,
-        type: activeTab as 'jobseeker' | 'employer'
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        role: userRole,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        ...(activeTab === 'employer' && { company_name: formData.company })
+      };
+
+      // Call the registration service
+      await authService.register(userData);
+      
+      // After successful registration, log the user in
+      await authService.login(formData.email, formData.password);
+      
+      // Get user data
+      const userDataResponse = await authService.getCurrentUser();
+      
+      // Update user context
+      const displayRole = activeTab as 'jobseeker' | 'employer';
+      setUserType(displayRole);
+      setUser({
+        id: userDataResponse.id.toString(),
+        name: displayRole === 'jobseeker' 
+          ? `${formData.firstName} ${formData.lastName}`.trim()
+          : formData.company || 'Company',
+        email: userDataResponse.email,
+        type: displayRole
       });
       
       toast({
         title: "Account created successfully!",
-        description: `Welcome to Connect as a ${activeTab === 'jobseeker' ? 'Job Seeker' : 'Employer'}.`,
+        description: `Welcome to DevHire Pro as a ${displayRole === 'jobseeker' ? 'Job Seeker' : 'Employer'}.`,
       });
       
-      navigate(activeTab === 'jobseeker' ? '/jobseeker/dashboard' : '/employer/dashboard');
-    }, 2000);
+      // Redirect based on user role
+      const redirectPath = displayRole === 'jobseeker' ? '/jobseeker/onboarding' : '/employer/onboarding';
+      navigate(redirectPath);
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      // Handle error message
+      let errorMessage = 'Failed to create an account. Please try again.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Registration failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSocialSignUp = (provider: string) => {
@@ -234,23 +282,44 @@ const SignUp = () => {
                   {/* Sign Up Form */}
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Name Field */}
-                    <div className="space-y-3">
-                      <Label htmlFor="name" className="text-base font-medium">
-                        {activeTab === 'jobseeker' ? 'Full Name' : 'Contact Name'} *
-                      </Label>
-                      <div className="relative">
-                        <User className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-                        <Input
-                          id="name"
-                          placeholder={activeTab === 'jobseeker' ? 'Enter your full name' : 'Enter contact name'}
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className={`h-12 pl-12 text-base ${errors.name ? 'border-red-500' : ''}`}
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName" className="text-base font-medium">
+                          {activeTab === 'jobseeker' ? 'First Name' : 'Contact Name'} *
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                          <Input
+                            id="firstName"
+                            placeholder={activeTab === 'jobseeker' ? 'First name' : 'Your name'}
+                            value={formData.firstName}
+                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                            className={`h-12 pl-12 text-base ${errors.firstName ? 'border-red-500' : ''}`}
+                          />
+                        </div>
+                        {errors.firstName && (
+                          <p className="text-sm text-red-500">{errors.firstName}</p>
+                        )}
                       </div>
-                      {errors.name && (
-                        <p className="text-sm text-red-500">{errors.name}</p>
-                      )}
+                      <div className={`space-y-2 ${activeTab === 'employer' ? 'opacity-50' : ''}`}>
+                        <Label htmlFor="lastName" className="text-base font-medium">
+                          Last Name {activeTab === 'jobseeker' && '*'}
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                          <Input
+                            id="lastName"
+                            placeholder="Last name"
+                            value={formData.lastName}
+                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                            className={`h-12 pl-12 text-base ${errors.lastName ? 'border-red-500' : ''}`}
+                            disabled={activeTab === 'employer'}
+                          />
+                        </div>
+                        {errors.lastName && (
+                          <p className="text-sm text-red-500">{errors.lastName}</p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Email Field */}

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { JobSeekerSidebar } from '@/components/JobSeekerSidebar';
@@ -8,41 +8,169 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, MapPin, DollarSign, Calendar, Star, MessageSquare, Eye, Filter, TrendingUp, Users, Briefcase } from 'lucide-react';
+import { Search, MapPin, DollarSign, Calendar, Star, MessageSquare, Eye, Filter, TrendingUp, Users, Briefcase, Loader2, ArrowLeft } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { jobs, getJobTypeLabel, formatSalaryRange, getSkillsArray } from '@/data/jobs';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { UserMenu } from '@/components/UserMenu';
+import { useUser } from '@/contexts/UserContext';
+import { jobPostsApi, type JobPost } from '@/services/jobPostsApi';
+import { applicationsApi, type Application } from '@/services/applicationsApi';
+import { formatDistanceToNow } from 'date-fns';
 
 const JobSeekerDashboard = () => {
+  const [jobs, setJobs] = useState<JobPost[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<JobPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [savedJobs, setSavedJobs] = useState<number[]>([]); // Will be used when saved jobs functionality is implemented
+  const [profileViews, setProfileViews] = useState(0); // Will need to be fetched from the backend
+  const [showApplyDialog, setShowApplyDialog] = useState(false);
+  const [coverLetter, setCoverLetter] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const { toast } = useToast();
+  const { user, isAuthenticated } = useUser();
+  const navigate = useNavigate();
 
-  const categories = ['All', 'Web Development', 'Mobile Development', 'Backend Development', 'Frontend Development', 'Full Stack Development', 'DevOps', 'UI/UX'];
-  const locations = ['All', 'Remote', 'New York', 'San Francisco', 'Austin', 'London', 'Berlin'];
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch all jobs
+        const jobsData = await jobPostsApi.getJobPosts();
+        setJobs(jobsData);
+        setFilteredJobs(jobsData);
+        
+        // Fetch user's applications if authenticated
+        if (user?.id) {
+          try {
+            const apps = await applicationsApi.getMyApplications(parseInt(user.id));
+            setApplications(apps);
+            
+            // TODO: Fetch saved jobs when the feature is implemented
+            // const saved = await savedJobsApi.getSavedJobs(parseInt(user.id));
+            // setSavedJobs(saved);
+            
+            // TODO: Fetch profile views when the endpoint is available
+            // const views = await profileApi.getProfileViews(parseInt(user.id));
+            // setProfileViews(views);
+          } catch (err) {
+            console.error('Error fetching user data:', err);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load data. Please try again later.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const filteredJobs = jobs.filter(job => {
-    const skillsArray = getSkillsArray(job.required_skills);
-    const matchesSearch = job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === '' || selectedCategory === 'All' || skillsArray.some(skill => 
-      selectedCategory.toLowerCase().includes(skill.toLowerCase())
-    );
-    const matchesLocation = selectedLocation === '' || selectedLocation === 'All' || 
-                           job.location.toLowerCase().includes(selectedLocation.toLowerCase());
-    return matchesSearch && matchesCategory && matchesLocation;
-  });
+    fetchData();
+  }, [toast, user?.id]);
 
-  const handleApply = (jobId: number, jobDescription: string) => {
-    console.log('Applying for job:', jobId);
-    toast({
-      title: "Application submitted!",
-      description: `Your application has been submitted successfully.`,
-    });
+  // Filter jobs based on search and filters
+  useEffect(() => {
+    let result = [...jobs];
+    
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        job => job.description.toLowerCase().includes(term) ||
+               job.location.toLowerCase().includes(term) ||
+               job.required_skills.toLowerCase().includes(term)
+      );
+    }
+    
+    if (selectedCategory && selectedCategory !== 'All') {
+      result = result.filter(job => 
+        job.required_skills.toLowerCase().includes(selectedCategory.toLowerCase())
+      );
+    }
+    
+    if (selectedLocation && selectedLocation !== 'All') {
+      result = result.filter(job => 
+        job.location.toLowerCase().includes(selectedLocation.toLowerCase())
+      );
+    }
+    
+    setFilteredJobs(result);
+  }, [jobs, searchTerm, selectedCategory, selectedLocation]);
+
+  // Extract unique locations and skills for filters
+  const locations = ['All', ...new Set(jobs.map(job => job.location))];
+  const allSkills = jobs.flatMap(job => 
+    job.required_skills.split(',').map(skill => skill.trim())
+  );
+  const uniqueSkills = ['All', ...new Set(allSkills)].filter(Boolean);
+
+  const handleApplyClick = (jobId: number) => {
+    if (!isAuthenticated) {
+      navigate('/signin');
+      return;
+    }
+    setSelectedJobId(jobId);
+    setShowApplyDialog(true);
   };
 
-  const handleSaveJob = (jobId: number, jobDescription: string) => {
+  const handleSubmitApplication = async () => {
+    if (!selectedJobId || !user?.id) {
+      console.error('No job selected or user not authenticated');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      setApplyError(null);
+      
+      const applicationData = {
+        cover_letter: coverLetter,
+        status: 0 // Pending
+      };
+      
+      await applicationsApi.createApplication(
+        parseInt(user.id),
+        selectedJobId,
+        applicationData
+      );
+      
+      // Refresh applications to update the UI
+      const apps = await applicationsApi.getMyApplications(parseInt(user.id));
+      setApplications(apps);
+      
+      toast({
+        title: 'Application submitted!',
+        description: 'Your application has been sent to the employer.',
+      });
+      
+      setShowApplyDialog(false);
+      setCoverLetter('');
+    } catch (err) {
+      console.error('Error applying to job:', err);
+      setApplyError('Failed to submit application. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const hasAppliedToJob = (jobId: number) => {
+    return applications.some(app => app.job_post_id === jobId);
+  };
+
+  const handleSaveJob = (jobId: number) => {
+    // TODO: Implement save job functionality
     console.log('Saving job:', jobId);
     toast({
       title: "Job saved!",
@@ -62,14 +190,19 @@ const JobSeekerDashboard = () => {
               <p className="text-gray-600 mt-1">Discover amazing projects and connect with top companies</p>
             </div>
           </div>
+          <div className="ml-auto">
+            <UserMenu />
+          </div>
           <div className="flex items-center gap-4">
             <Button variant="outline" size="lg">
               <MessageSquare className="h-5 w-5 mr-2" />
               Messages
             </Button>
-            <Button size="lg">
-              <Briefcase className="h-5 w-5 mr-2" />
-              My Applications
+            <Button size="lg" asChild>
+              <Link to="/jobseeker/applications">
+                <Briefcase className="h-5 w-5 mr-2" />
+                My Applications
+              </Link>
             </Button>
           </div>
         </header>
@@ -95,7 +228,7 @@ const JobSeekerDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Applications</p>
-                    <p className="text-3xl font-bold text-gray-900">12</p>
+                    <p className="text-3xl font-bold text-gray-900">{applications.length}</p>
                   </div>
                   <div className="bg-green-100 p-3 rounded-lg">
                     <Users className="h-8 w-8 text-green-600" />
@@ -108,7 +241,7 @@ const JobSeekerDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Saved Jobs</p>
-                    <p className="text-3xl font-bold text-gray-900">8</p>
+                    <p className="text-3xl font-bold text-gray-900">{savedJobs.length}</p>
                   </div>
                   <div className="bg-yellow-100 p-3 rounded-lg">
                     <Star className="h-8 w-8 text-yellow-600" />
@@ -121,7 +254,7 @@ const JobSeekerDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Profile Views</p>
-                    <p className="text-3xl font-bold text-gray-900">156</p>
+                    <p className="text-3xl font-bold text-gray-900">{profileViews}</p>
                   </div>
                   <div className="bg-purple-100 p-3 rounded-lg">
                     <Eye className="h-8 w-8 text-purple-600" />
@@ -148,7 +281,7 @@ const JobSeekerDashboard = () => {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map(category => (
+                  {uniqueSkills.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
                 </SelectContent>
@@ -180,9 +313,9 @@ const JobSeekerDashboard = () => {
 
             <div className="grid gap-6">
               {filteredJobs.map((job) => {
-                const skillsArray = getSkillsArray(job.required_skills);
-                const jobTypeLabel = getJobTypeLabel(job.job_type);
-                const salaryRange = formatSalaryRange(job.salary_min, job.salary_max);
+                const skillsArray = job.required_skills.split(',').map(skill => skill.trim());
+                const jobTypeLabel = 'Full-time';
+                const salaryRange = `${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`;
                 
                 return (
                   <motion.div
@@ -220,16 +353,17 @@ const JobSeekerDashboard = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleSaveJob(job.id, job.description)}
+                              onClick={() => handleSaveJob(job.id)}
                             >
                               <Star className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleApply(job.id, job.description)}
+                              onClick={() => handleApplyClick(job.id)}
+                              disabled={hasAppliedToJob(job.id)}
                             >
-                              Apply
+                              {hasAppliedToJob(job.id) ? 'Applied' : 'Apply'}
                             </Button>
                           </div>
                         </div>
@@ -286,6 +420,58 @@ const JobSeekerDashboard = () => {
           </div>
         </main>
       </SidebarInset>
+
+      {/* Apply Dialog */}
+      <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Apply for Job</DialogTitle>
+            <DialogDescription>
+              Submit your application for this position
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="coverLetter" className="text-sm font-medium">
+                Cover Letter <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                id="coverLetter"
+                placeholder="Write a cover letter explaining why you're a good fit for this position..."
+                className="min-h-[200px]"
+                value={coverLetter}
+                onChange={(e) => setCoverLetter(e.target.value)}
+                required
+              />
+              {applyError && (
+                <p className="text-sm text-red-500">{applyError}</p>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowApplyDialog(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmitApplication}
+              disabled={isSubmitting || !coverLetter.trim()}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : 'Submit Application'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, MapPin, Star, MessageSquare, Eye } from 'lucide-react';
 import { jobSeekerProfiles, getSkillsArray } from '@/data/developers';
 import { useToast } from '@/hooks/use-toast';
+import { UserMenu } from '@/components/UserMenu';
 
 const EmployerDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,6 +49,9 @@ const EmployerDashboard = () => {
       <SidebarInset className="flex-1 w-full min-w-0">
         <header className="flex items-center sticky top-0 z-10 gap-4 border-b bg-white px-6 py-4">
           <SidebarTrigger />
+          <div className="ml-auto">
+            <UserMenu />
+          </div>
           <h1 className="text-2xl font-semibold">Find Talent</h1>
         </header>
         
