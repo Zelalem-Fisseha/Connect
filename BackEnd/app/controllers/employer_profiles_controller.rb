@@ -4,7 +4,16 @@ class EmployerProfilesController < ApplicationController
     @employer_profile = @user.employer_profile
 
     if @employer_profile
-      render json: @employer_profile
+      render json: @employer_profile.as_json(only: [
+    :id,
+    :user_id,
+    :company_name,
+    :company_description,
+    :industry,
+    :location,
+    :created_at,
+    :updated_at
+])
     else
       render json: { error: 'Employer profile not found' }, status: :not_found
     end

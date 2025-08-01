@@ -16,7 +16,13 @@ Rails.application.routes.draw do
   end
   resources :offers, only: [:show, :update, :destroy]
 
+  # authentication routes( we use sessions controller for authentication)
+ post "login", to: "sessions#create", as: :login
+ delete "logout", to: "sessions#destroy", as: :logout
+ get "current_user", to: "sessions#current_user", as: :current_user
+ post "register", to: "users#create", as: :register
 
+  
   # Defines the root path route ("/")
   # root "posts#index"
 end
