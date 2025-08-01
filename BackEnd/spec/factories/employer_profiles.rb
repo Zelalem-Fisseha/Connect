@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :employer_profile do
-    user { nil }
-    company_name { "MyString" }
-    company_discription { "MyString" }
-    location { "MyString" }
-    industry { "MyString" }
+    association :user, factory: :user
+    company_name {Faker::Company.name}
+    company_description { Faker::Lorem.paragraph }
+    location { Faker::Address.city }
+    industry { Faker::Company.industry }
   end
 end

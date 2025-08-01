@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :user do
-    name { "MyString" }
-    email { "MyString" }
-    role { 1 }
-    password_digest { "MyString" }
+    name {Faker::Name.name}
+    email { Faker::Internet.unique.email }
+    role { 0 }
+    password { "password123" }
   end
 end

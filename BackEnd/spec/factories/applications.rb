@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :application do
-    job_post { nil }
-    job_seeker { nil }
-    cover_letter { "MyString" }
-    status { 1 }
+    association :job_post
+    association :job_seeker_profile
+    cover_letter { Faker::Lorem.paragraph }
+    status { [0, 1, 2].sample }
   end
 end
