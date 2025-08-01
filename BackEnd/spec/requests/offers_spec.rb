@@ -3,6 +3,8 @@ require 'rails_helper'
 RSpec.describe "Offers", type: :request do
   let!(:job_post) { create(:job_post) }
   let!(:offer) { create(:offer, job_post: job_post) }
+  let!(:job_seeker_profile) { create(:job_seeker_profile) }
+  let!(:employer_profile) { create(:employer_profile) }
 
   describe "GET /job_posts/:job_post_id/offers" do
     it "returns offers for a job post" do
@@ -16,7 +18,11 @@ RSpec.describe "Offers", type: :request do
     it "creates an offer for a job post" do
       post job_post_offers_path(job_post_id: job_post.id), params: {
         offer: {
-          # ...offer attributes...
+        job_seeker_profile_id: job_seeker_profile.id,
+        employer_profile_id: employer_profile.id,
+        base_salary: 60000,
+        benefits_description: "Health, dental, and equity.",
+        status: 0
         }
       }
       expect(response).to have_http_status(:created)

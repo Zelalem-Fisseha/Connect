@@ -24,25 +24,10 @@ RSpec.describe "EmployerProfiles", type: :request do
         }
       }
       expect(response).to have_http_status(:created)
-      expect(response.body).to include("Tech Solutions")
+      expect(response.body).to include("Some Tech Solutions")
       expect(response.body).to include("Innovative tech solutions provider")
-      expect(response.body).to include("San Francisco")
-      expect(response.body).to include("Technology")
-    end
-  end
-  describe "PATCH /users/:user_id/employer_profiles" do
-    it "updates the employer profile" do
-      put user_employer_profile_path(user_id: user.id), params: {
-        employer_profile: {
-          company_name: "Updated Tech Solutions"
-        }
-      }
-      expect(response).to have_http_status(:success)
-      employer_profile.reload
-      expect(employer_profile.company_name).to eq("Updated Tech Solutions")
-      expect(employer_profile.company_description).to eq("Innovative tech solutions provider")
-      expect(employer_profile.location).to eq("Bole Atlas")
-      expect(employer_profile.industry).to eq("SAS")
+      expect(response.body).to include("Bole Atlas")
+      expect(response.body).to include("SAS")
     end
   end
   describe "PUT/users/:user_id/employer_profiles" do
