@@ -17,7 +17,7 @@ Rails.application.routes.draw do
     resources :offers, only: [:index, :create]
   end
   
-  resources :job_seeker_profiles, only: [] do
+  resources :job_seeker_profiles, only: [:index, :show] do
     resources :applications, only: [:index], controller: 'job_seeker_applications'
   end
   resources :offers, only: [:show, :update, :destroy]

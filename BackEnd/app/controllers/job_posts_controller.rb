@@ -43,6 +43,7 @@ class JobPostsController < ApplicationController
   def job_post_params
     params.require(:job_post).permit(
       :employer_profile_id,
+      :title,
       :description,
       :required_skills,
       :salary_min,

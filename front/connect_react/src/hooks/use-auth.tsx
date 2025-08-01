@@ -8,7 +8,13 @@ interface User {
   email: string;
   name: string;
   role: string;
-  company_name?: string;
+  profile?: {
+    id: number;
+    company_name: string;
+    company_description: string;
+    location: string;
+    industry: string;
+  };
 }
 
 interface AuthContextType {
@@ -38,11 +44,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const userData = await authService.getCurrentUser();
       if (userData) {
-        setUser(userData);
+        // Ensure profile data is properly structured
+        const user = {
+          ...userData,
+          profile: userData.profile || null
+        };
+        setUser(user);
+        return user;
       }
+      return null;
     } catch (error) {
       console.error('Failed to load user', error);
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -52,12 +66,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const userData = await authService.login(email, password);
-      setUser(userData.user);
+      const user = userData.user || userData; // Handle both response formats
+      
+      // Ensure profile data is properly structured
+      const userWithProfile = {
+        ...user,
+        profile: user.profile || null
+      };
+      
+      setUser(userWithProfile);
       toast({
         title: 'Login successful',
-        description: `Welcome back, ${userData.user.name}!`,
+        description: `Welcome back, ${user.name || 'User'}!`,
       });
-      navigate(userData.user.role === 'employer' ? '/employer/dashboard' : '/jobseeker/dashboard');
+      
+      // Navigate based on role
+      const targetPath = user.role === 'employer' ? '/employer/dashboard' : '/jobseeker/dashboard';
+      navigate(targetPath);
+      
+      return userWithProfile;
     } catch (error: any) {
       console.error('Login failed:', error);
       throw error;

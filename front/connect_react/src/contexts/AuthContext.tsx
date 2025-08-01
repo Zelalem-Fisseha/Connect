@@ -41,11 +41,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       const response = await api.post('/login', { user: { email, password } });
-      setUser(response.data.user);
+      const userData = response.data.user || response.data;
+      
+      // Transform the user data to match our User type
+      const user = {
+        ...userData,
+        name: userData.name || userData.email,
+        type: userData.role === 1 ? 'employer' : 'jobseeker' as const,
+        profile: userData.profile
+      };
+      
+      setUser(user);
       toast({
         title: 'Login successful',
         description: 'Welcome back!',
       });
+      
+      return user;
     } catch (error) {
       console.error('Login failed:', error);
       toast({
@@ -79,10 +91,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = async () => {
     try {
       const response = await api.get('/current_user');
-      setUser(response.data);
+      const userData = response.data.user || response.data;
+      
+      // Transform the user data to match our User type
+      const user = {
+        ...userData,
+        name: userData.name || userData.email,
+        type: userData.role === 1 ? 'employer' : 'jobseeker' as const,
+        profile: userData.profile
+      };
+      
+      setUser(user);
+      return user;
     } catch (error) {
       console.error('Failed to refresh user data:', error);
       setUser(null);
+      return null;
     }
   };
 

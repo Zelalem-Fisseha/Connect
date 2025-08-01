@@ -11,9 +11,10 @@ import JobSeekerDashboard from "@/pages/JobSeekerDashboard";
 import EmployerDashboard from "@/pages/EmployerDashboard";
 import JobSeekerProfile from "@/pages/JobSeekerProfile";
 import EmployerProfile from "@/pages/EmployerProfile";
+import DeveloperProfile from "@/pages/DeveloperProfile";
 import JobDetails from "@/pages/JobDetails";
 import PostJob from "@/pages/PostJob";
-import EmployerJobs from "@/pages/EmployerJobs";
+import EmployerJobPosts from "@/pages/EmployerJobPosts";
 import JobSeekerSettings from "@/pages/JobSeekerSettings";
 import JobSeekerApplications from "@/pages/JobSeekerApplications";
 import SignIn from "@/pages/SignIn";
@@ -65,7 +66,17 @@ function App() {
                   } />
                   <Route path="/employer/jobs" element={
                     <AuthGuard requiredUserType="employer">
-                      <EmployerJobs />
+                      <EmployerJobPosts />
+                    </AuthGuard>
+                  } />
+                  <Route path="/employer/jobs/:id" element={
+                    <AuthGuard requiredUserType="employer">
+                      <JobDetails />
+                    </AuthGuard>
+                  } />
+                  <Route path="/employer/jobs/:id/edit" element={
+                    <AuthGuard requiredUserType="employer">
+                      <PostJob />
                     </AuthGuard>
                   } />
                   <Route path="/jobseeker/profile" element={
@@ -76,6 +87,11 @@ function App() {
                   <Route path="/employer/profile" element={
                     <AuthGuard requiredUserType="employer">
                       <EmployerProfile />
+                    </AuthGuard>
+                  } />
+                  <Route path="/developers/:id" element={
+                    <AuthGuard requiredUserType="employer">
+                      <DeveloperProfile />
                     </AuthGuard>
                   } />
                   <Route path="/job/:id" element={

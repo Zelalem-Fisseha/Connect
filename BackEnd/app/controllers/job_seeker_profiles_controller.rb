@@ -1,5 +1,12 @@
 class JobSeekerProfilesController < ApplicationController
-  before_action :set_user
+  before_action :set_user, except: [:index, :show]
+  before_action :set_job_seeker_profile, only: [:show]
+  
+  # GET /job_seeker_profiles
+  def index
+    @job_seeker_profiles = JobSeekerProfile.includes(:user).all
+    render json: @job_seeker_profiles, include: :user
+  end
 
   def show
     @job_seeker_profile = @user.job_seeker_profile
@@ -53,12 +60,26 @@ class JobSeekerProfilesController < ApplicationController
       render json: { error: 'Job seeker profile not found for this user' }, status: :not_found
     end
   end
+  # GET /job_seeker_profiles/:id
+  def show
+    if @job_seeker_profile
+      render json: @job_seeker_profile, include: :user
+    else
+      render json: { error: 'Job seeker profile not found' }, status: :not_found
+    end
+  end
+
   private
+  
+  def set_job_seeker_profile
+    @job_seeker_profile = JobSeekerProfile.includes(:user).find_by(id: params[:id])
+  end
+  
   def set_user
     @user = User.find(params[:user_id])
   end
   def job_seeker_profile_params
-    params.require(:job_seeker_profile).permit( :title,
+    params.require(:job_seeker_profile).permit( 
     :bio,
     :years_of_experience,
     :skills,

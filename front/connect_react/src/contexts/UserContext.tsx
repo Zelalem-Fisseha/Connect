@@ -4,11 +4,23 @@ import { User as AuthUser } from '@/types/auth';
 export type UserType = 'jobseeker' | 'employer';
 
 // Extend the User type from auth with frontend specific fields
-interface User extends Omit<AuthUser, 'id' | 'role'> {
+export interface User extends Omit<AuthUser, 'id' | 'role'> {
   id: string; // Override to ensure string type for frontend
   name: string; // Combined first_name and last_name or company_name
   type: UserType; // Frontend specific type (jobseeker/employer)
   avatar?: string; // Frontend specific field
+  first_name?: string;
+  last_name?: string;
+  company_name?: string;
+  created_at?: string;
+  updated_at?: string;
+  profile?: {
+    id?: number;
+    company_name?: string;
+    company_description?: string;
+    location?: string;
+    industry?: string;
+  };
 }
 
 interface UserContextType {

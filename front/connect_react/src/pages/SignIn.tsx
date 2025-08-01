@@ -23,20 +23,32 @@ import {
   Globe,
   Shield
 } from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
+import { useUser, UserType, type User } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import authService from '@/services/authService';
-import { User } from '@/types/auth';
+import { User as AuthUser } from '@/types/auth';
+
+interface UserProfile {
+  company_name?: string;
+  company_description?: string;
+  location?: string;
+  industry?: string;
+  [key: string]: string | undefined; // More specific type for additional properties
+}
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const { setUserType, setUser } = useUser();
+  const { setUser, setUserType } = useUser() as { setUser: (user: User | null) => void; setUserType: (type: UserType) => void };
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('jobseeker');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    email: string;
+    password: string;
+    rememberMe: boolean;
+  }>({
     email: '',
     password: '',
     rememberMe: false
@@ -76,30 +88,48 @@ const SignIn = () => {
     setIsLoading(true);
     
     try {
-      // Call the login service
-      await authService.login(formData.email, formData.password);
+      // Call the login service and get the response with role
+      const response = await authService.login(formData.email, formData.password);
       
-      // Get user data after successful login
-      const userData = await authService.getCurrentUser();
+      // Get user data from the login response
+      if (!response.user) {
+        throw new Error('No user data received');
+      }
       
-      // Update user context
-      const userRole = activeTab === 'jobseeker' ? 'jobseeker' : 'employer';
+      const userData = response.user as AuthUser;
+      
+      // Get the role from the user data and map to our frontend UserType
+      const apiRole = userData.role || 'job_seeker';
+      const userRole: 'jobseeker' | 'employer' = apiRole === 'job_seeker' ? 'jobseeker' : 'employer';
+      
+      // Prepare user data for context
+      const userProfile: UserProfile = (userData as { profile?: UserProfile }).profile || {};
+      const displayName = userRole === 'jobseeker' 
+        ? `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || 'Job Seeker'
+        : userProfile.company_name || 'Employer';
+      
+      // Update user context with the actual role and profile from the API
       setUserType(userRole);
-      setUser({
+      const user: User = {
         id: userData.id.toString(),
-        name: userRole === 'jobseeker' 
-          ? `${userData.first_name || ''} ${userData.last_name || ''}`.trim()
-          : userData.company_name || 'Company',
+        name: displayName,
+        type: userRole,
         email: userData.email,
-        type: userRole
-      });
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        company_name: userData.company_name,
+        profile: userProfile,
+        created_at: userData.created_at,
+        updated_at: userData.updated_at
+      };
+      setUser(user);
       
       toast({
         title: "Welcome back!",
         description: `Successfully signed in as ${userRole === 'jobseeker' ? 'Job Seeker' : 'Employer'}.`,
       });
       
-      // Redirect based on user role
+      // Redirect based on the actual user role from the API
       const redirectPath = userRole === 'jobseeker' ? '/jobseeker/dashboard' : '/employer/dashboard';
       navigate(redirectPath);
       
@@ -140,14 +170,19 @@ const SignIn = () => {
     }
   };
 
-  const handleDemoLogin = (type: 'jobseeker' | 'employer') => {
-    setUserType(type);
-    setUser({
+  const handleDemoLogin = (type: UserType) => {
+    const demoUser: User = {
       id: '1',
       name: type === 'jobseeker' ? 'John Doe' : 'TechStart Inc.',
       email: 'demo@example.com',
-      type: type
-    });
+      type: type,
+      first_name: type === 'jobseeker' ? 'John' : undefined,
+      last_name: type === 'jobseeker' ? 'Doe' : undefined,
+      company_name: type === 'employer' ? 'TechStart Inc.' : undefined
+    };
+    
+    setUserType(type);
+    setUser(demoUser);
     
     toast({
       title: "Demo Login",
